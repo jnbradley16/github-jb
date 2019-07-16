@@ -1,0 +1,36 @@
+#Import Libraries
+import pandas as pd
+import numpy as np
+import geopy
+
+#Import Data Raw
+html = "https://en.wikipedia.org/wiki/List_of_postal_codes_of_Canada:_M"
+try: 
+    df = pd.read_html(html)[3] 
+except IndexError:
+    df = pd.read_html(html)[0]
+df.head(10)
+
+# Adjust Data
+df = df[df.Borough != "Not assigned"]
+df_2 = df.groupby(['Postcode','Borough'])['Neighbourhood'].apply(lambda x: ','.join(x)).reset_index()
+df_2.Neighbourhood.replace("Not assigned",df.Borough,inplace=True)
+
+# Review Data
+df_2.shape
+
+# Download Geo Data
+geo_df = pd.read_csv('Geospatial_data.csv')
+geo_df.head(10)
+
+# Combine Geo Data
+df_final = df_2.join(geo_df)
+df_final.head(10)
+
+#Adjust Geo Data
+del df_final['Postal Code']
+
+#Filter to Toronot Sub-Set
+df_Toronto = df[df.Borough == "Downtown Toronto"]
+df_Toronto.head(5)
+
